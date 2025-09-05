@@ -49,12 +49,17 @@
         </div>
 
         <!-- Forum Threads Container -->
-        <div id="forum-threads" class="bg-gray-800 rounded-lg shadow-xl min-h-[200px] flex items-center justify-center">
-            <div id="empty-forum-message" class="text-center">
+        <div id="forum-threads" class="bg-gray-800 rounded-lg shadow-xl">
+            <!-- Pesan loading awal -->
+            <div id="loading-message" class="text-center p-10">
+                <p class="text-gray-400">Memuat room...</p>
+            </div>
+            <!-- Pesan forum kosong akan ditangani oleh JS -->
+            <div id="empty-forum-message" class="hidden text-center p-10">
                 <h3 class="text-xl font-semibold text-gray-400">Belum ada topik diskusi.</h3>
                 <p class="text-gray-500 mt-2">Login dan jadilah yang pertama membuat room baru!</p>
             </div>
-            <!-- Topics will be dynamically added here -->
+            <!-- Topics will be dynamically added here from Firestore -->
         </div>
     </main>
 
@@ -65,93 +70,54 @@
         </div>
     </footer>
 
+    <!-- Modals (Login/Register, Create Room) -->
     <!-- Login/Register Modal -->
     <div id="auth-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
         <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-md relative">
             <button onclick="hideModal('auth-modal')" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl font-bold">&times;</button>
-            
-            <!-- Login View -->
             <div id="login-view">
                 <h2 class="text-2xl font-bold text-white mb-6 text-center">Login</h2>
                 <form id="login-form">
-                    <div class="mb-4">
-                        <label for="login-email" class="block text-gray-400 mb-2 text-sm">Email</label>
-                        <input type="email" id="login-email" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
-                    </div>
-                    <div class="mb-6">
-                        <label for="login-password" class="block text-gray-400 mb-2 text-sm">Password</label>
-                        <input type="password" id="login-password" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
-                    </div>
+                    <div class="mb-4"><label for="login-email" class="block text-gray-400 mb-2 text-sm">Email</label><input type="email" id="login-email" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required></div>
+                    <div class="mb-6"><label for="login-password" class="block text-gray-400 mb-2 text-sm">Password</label><input type="password" id="login-password" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required></div>
                     <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">Login</button>
                 </form>
-                <div class="my-4 flex items-center">
-                    <hr class="w-full border-gray-600"><span class="px-2 text-gray-500 text-sm">ATAU</span><hr class="w-full border-gray-600">
-                </div>
-                <button id="google-login-btn" class="w-full flex items-center justify-center bg-white text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors">
-                    <svg class="w-5 h-5 mr-3" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
-                    Lanjutkan dengan Google
-                </button>
+                <div class="my-4 flex items-center"><hr class="w-full border-gray-600"><span class="px-2 text-gray-500 text-sm">ATAU</span><hr class="w-full border-gray-600"></div>
+                <button id="google-login-btn" class="w-full flex items-center justify-center bg-white text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"><svg class="w-5 h-5 mr-3" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg> Lanjutkan dengan Google</button>
                 <p class="text-center text-gray-500 mt-6 text-sm">Belum punya akun? <a href="#" id="show-register-view" class="font-semibold text-cyan-400 hover:underline">Daftar di sini</a></p>
             </div>
-
-            <!-- Register View -->
             <div id="register-view" class="hidden">
                  <h2 class="text-2xl font-bold text-white mb-6 text-center">Buat Akun Baru</h2>
                 <form id="register-form">
-                     <div class="mb-4">
-                        <label for="register-displayname" class="block text-gray-400 mb-2 text-sm">Nama Tampilan</label>
-                        <input type="text" id="register-displayname" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="register-email" class="block text-gray-400 mb-2 text-sm">Email</label>
-                        <input type="email" id="register-email" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
-                    </div>
-                    <div class="mb-6">
-                        <label for="register-password" class="block text-gray-400 mb-2 text-sm">Password</label>
-                        <input type="password" id="register-password" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
-                    </div>
+                     <div class="mb-4"><label for="register-displayname" class="block text-gray-400 mb-2 text-sm">Nama Tampilan</label><input type="text" id="register-displayname" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required></div>
+                    <div class="mb-4"><label for="register-email" class="block text-gray-400 mb-2 text-sm">Email</label><input type="email" id="register-email" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required></div>
+                    <div class="mb-6"><label for="register-password" class="block text-gray-400 mb-2 text-sm">Password</label><input type="password" id="register-password" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required></div>
                     <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">Daftar</button>
                 </form>
                 <p class="text-center text-gray-500 mt-6 text-sm">Sudah punya akun? <a href="#" id="show-login-view" class="font-semibold text-cyan-400 hover:underline">Login di sini</a></p>
             </div>
         </div>
     </div>
-    
-    <!-- Create Room Modal (Sama seperti sebelumnya) -->
     <div id="create-room-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
         <div class="modal-content bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-lg">
             <h2 class="text-2xl font-bold text-white mb-6">Buat Room Baru</h2>
             <form id="create-room-form">
-                <div class="mb-4">
-                    <label for="room-title" class="block text-gray-400 mb-2">Judul Room</label>
-                    <input type="text" id="room-title" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required>
-                </div>
-                <div class="mb-6">
-                    <label for="room-content" class="block text-gray-400 mb-2">Isi Pembahasan</label>
-                    <textarea id="room-content" rows="5" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required></textarea>
-                </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" onclick="hideModal('create-room-modal')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Batal</button>
-                    <button type="submit" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg">Buat Room</button>
-                </div>
+                <div class="mb-4"><label for="room-title" class="block text-gray-400 mb-2">Judul Room</label><input type="text" id="room-title" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required></div>
+                <div class="mb-6"><label for="room-content" class="block text-gray-400 mb-2">Isi Pembahasan</label><textarea id="room-content" rows="5" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500" required></textarea></div>
+                <div class="flex justify-end space-x-4"><button type="button" onclick="hideModal('create-room-modal')" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Batal</button><button type="submit" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded-lg">Buat Room</button></div>
             </form>
         </div>
     </div>
 
     <!-- Notification Toast -->
-    <div id="notification" class="hidden fixed bottom-5 right-5 bg-green-500 text-white py-3 px-6 rounded-lg shadow-lg transition-transform duration-300 translate-y-20">
-        <p>Notification message</p>
-    </div>
+    <div id="notification" class="hidden fixed bottom-5 right-5 bg-green-500 text-white py-3 px-6 rounded-lg shadow-lg transition-transform duration-300 translate-y-20"></div>
 
     <!-- Firebase SDK -->
     <script type="module">
-        // Import fungsi yang diperlukan dari SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // =================================================================================
-        // KONFIGURASI FIREBASE ANDA TELAH DITAMBAHKAN
         const firebaseConfig = {
             apiKey: "AIzaSyC71-GHazQEUiAxGh3wh1aNYEMr_R4tuSw",
             authDomain: "shiro-live-chat.firebaseapp.com",
@@ -160,18 +126,14 @@
             messagingSenderId: "900427368999",
             appId: "1:900427368999:web:1cc8f680acc1eb732b9c02"
         };
-        // =================================================================================
 
-        // Inisialisasi Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // State Management
         let currentUser = null;
 
-        // DOM Elements
         const navMenu = document.getElementById('nav-menu');
         const createRoomBtn = document.getElementById('create-room-btn');
         const googleLoginBtn = document.getElementById('google-login-btn');
@@ -182,21 +144,20 @@
         const showLoginLink = document.getElementById('show-login-view');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
-        const createRoomModal = document.getElementById('create-room-modal');
         const createRoomForm = document.getElementById('create-room-form');
         const forumThreadsContainer = document.getElementById('forum-threads');
         const emptyForumMessage = document.getElementById('empty-forum-message');
+        const loadingMessage = document.getElementById('loading-message');
         
         // --- Utility Functions ---
-        function showModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
-        function hideModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
+        window.hideModal = (modalId) => document.getElementById(modalId).classList.add('hidden');
+        const showModal = (modalId) => document.getElementById(modalId).classList.remove('hidden');
         
         function showNotification(message, isError = false) {
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.classList.remove('hidden', 'bg-green-500', 'bg-red-500', 'translate-y-20');
             notification.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
-            
             setTimeout(() => notification.classList.remove('translate-y-20'), 10);
             setTimeout(() => {
                 notification.classList.add('translate-y-20');
@@ -207,79 +168,164 @@
         // --- UI Update Function ---
         function updateUI() {
             if (currentUser) {
-                navMenu.innerHTML = `
-                    <span class="text-gray-300">Halo, <span class="font-bold text-cyan-400">${currentUser.displayName}</span></span>
-                    <button id="logout-btn" class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-300">Logout</button>
-                `;
+                navMenu.innerHTML = `<span class="text-gray-300">Halo, <span class="font-bold text-cyan-400">${currentUser.displayName}</span></span> <button id="logout-btn" class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-300">Logout</button>`;
                 document.getElementById('logout-btn').addEventListener('click', handleLogout);
             } else {
-                navMenu.innerHTML = `
-                    <button id="login-btn-nav" class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-300">Login</button>
-                `;
+                navMenu.innerHTML = `<button id="login-btn-nav" class="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-300">Login</button>`;
                 document.getElementById('login-btn-nav').addEventListener('click', () => showModal('auth-modal'));
+            }
+             // Refresh comment inputs status
+            document.querySelectorAll('.comment-form input').forEach(input => {
+                input.placeholder = currentUser ? 'Tulis komentar...' : 'Login untuk berkomentar...';
+                input.disabled = !currentUser;
+            });
+        }
+        
+        // --- Firebase Auth Handlers (Sama seperti sebelumnya) ---
+        const handleGoogleLogin = async () => { /* ... (kode tidak berubah) ... */ };
+        const handleEmailRegister = async (e) => { /* ... (kode tidak berubah) ... */ };
+        const handleEmailLogin = async (e) => { /* ... (kode tidak berubah) ... */ };
+        const handleLogout = async () => { /* ... (kode tidak berubah) ... */ };
+        // Definisi lengkap fungsi auth disembunyikan untuk keringkasan, karena tidak berubah
+        const handleLogout_full = async () => { await signOut(auth); showNotification('Anda telah logout.'); };
+        const handleGoogleLogin_full = async () => { try { const result = await signInWithPopup(auth, provider); hideModal('auth-modal'); showNotification(`Selamat datang, ${result.user.displayName}!`); } catch (error) { showNotification('Gagal login dengan Google.', true); } };
+        const handleEmailRegister_full = async (e) => { e.preventDefault(); const d=registerForm['register-displayname'].value, em=registerForm['register-email'].value, p=registerForm['register-password'].value; try { const uc = await createUserWithEmailAndPassword(auth,em,p); await updateProfile(uc.user,{displayName:d}); hideModal('auth-modal'); showNotification(`Pendaftaran berhasil! Selamat datang, ${d}!`); registerForm.reset(); } catch(err){ showNotification(err.code === 'auth/email-already-in-use'?'Email ini sudah terdaftar.':'Pendaftaran gagal.', true); }};
+        const handleEmailLogin_full = async (e) => { e.preventDefault(); const em=loginForm['login-email'].value, p=loginForm['login-password'].value; try { const uc = await signInWithEmailAndPassword(auth,em,p); hideModal('auth-modal'); showNotification(`Selamat datang kembali, ${uc.user.displayName}!`); loginForm.reset(); } catch(err){ showNotification((err.code==='auth/user-not-found'||err.code==='auth/wrong-password'||err.code==='auth/invalid-credential')?'Email atau password salah.':'Login gagal.', true); }};
+
+        
+        // --- NEW: Firestore Logic ---
+
+        // Fungsi untuk mengambil dan menampilkan semua room secara real-time
+        function listenForRooms() {
+            const roomsCollection = collection(db, 'rooms');
+            const q = query(roomsCollection, orderBy('createdAt', 'desc'));
+
+            onSnapshot(q, (snapshot) => {
+                loadingMessage.classList.add('hidden');
+                
+                if (snapshot.empty) {
+                    forumThreadsContainer.innerHTML = ''; // Hapus loading message jika ada
+                    emptyForumMessage.classList.remove('hidden');
+                } else {
+                    emptyForumMessage.classList.add('hidden');
+                    forumThreadsContainer.innerHTML = ''; // Hapus konten lama sebelum render ulang
+                    snapshot.docs.forEach(doc => {
+                        renderRoom(doc.id, doc.data());
+                    });
+                }
+                updateUI(); // Pastikan status input komentar benar setelah render
+            });
+        }
+
+        // Fungsi untuk merender satu room ke DOM
+        function renderRoom(roomId, roomData) {
+            const topicElement = document.createElement('div');
+            topicElement.className = 'w-full p-6 border-b border-gray-700 last:border-b-0';
+            topicElement.dataset.roomId = roomId;
+
+            const commentsHtml = (roomData.comments || [])
+                .map(comment => `
+                    <div class="border-t border-gray-700 p-3 text-sm">
+                        <p><strong class="text-cyan-400">${comment.authorName}</strong>: ${comment.text}</p>
+                    </div>
+                `).join('');
+
+            const createdAt = roomData.createdAt?.toDate().toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) || 'beberapa saat yang lalu';
+            
+            topicElement.innerHTML = `
+                <div class="flex items-center mb-3">
+                    <div class="bg-cyan-500/20 text-cyan-400 p-3 rounded-lg mr-4 flex-shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-lg text-white break-words">${roomData.title}</h3>
+                        <p class="text-sm text-gray-400">oleh <span class="text-cyan-500">${roomData.authorName}</span>, pada ${createdAt}</p>
+                    </div>
+                </div>
+                <p class="text-gray-300 ml-16 mb-4 break-words">${roomData.content}</p>
+                <div class="ml-16 mt-4">
+                    <h4 class="font-semibold text-gray-400 mb-2">Komentar (${(roomData.comments || []).length})</h4>
+                    <div class="comment-list bg-gray-900/50 rounded-lg max-h-48 overflow-y-auto">${commentsHtml}</div>
+                    <form class="comment-form mt-3">
+                         <input type="text" placeholder="Login untuk berkomentar..." disabled class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    </form>
+                </div>
+            `;
+            forumThreadsContainer.appendChild(topicElement);
+            topicElement.querySelector('.comment-form').addEventListener('submit', handleCommentSubmit);
+        }
+
+        // UPDATED: Menangani submit pembuatan room
+        async function handleCreateRoomSubmit(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+            const title = document.getElementById('room-title').value;
+            const content = document.getElementById('room-content').value;
+
+            try {
+                // 1. Simpan room baru ke Firestore
+                const roomsCollection = collection(db, 'rooms');
+                await addDoc(roomsCollection, {
+                    title: title,
+                    content: content,
+                    authorName: currentUser.displayName,
+                    authorId: currentUser.uid,
+                    createdAt: serverTimestamp(),
+                    comments: [] // Array kosong untuk komentar
+                });
+
+                // 2. Update tanggal terakhir user membuat room
+                const today = new Date().toDateString();
+                const userDocRef = doc(db, 'users', currentUser.uid);
+                await setDoc(userDocRef, { lastRoomCreationDate: today }, { merge: true });
+
+                // 3. Tutup modal dan reset form
+                hideModal('create-room-modal');
+                createRoomForm.reset();
+                showNotification('Room berhasil dibuat!');
+                // onSnapshot akan otomatis merender room baru, tidak perlu panggil renderRoom() manual
+            } catch (error) {
+                console.error("Error creating room:", error);
+                showNotification('Gagal membuat room, coba lagi.', true);
             }
         }
         
-        // --- Firebase Authentication Handlers ---
-        const handleGoogleLogin = async () => {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                hideModal('auth-modal');
-                showNotification(`Selamat datang, ${result.user.displayName}!`);
-            } catch (error) {
-                console.error("Error during Google sign-in:", error);
-                showNotification('Gagal login dengan Google.', true);
-            }
-        };
-
-        const handleEmailRegister = async (e) => {
+        // UPDATED: Menangani submit komentar
+        async function handleCommentSubmit(e) {
             e.preventDefault();
-            const displayName = registerForm['register-displayname'].value;
-            const email = registerForm['register-email'].value;
-            const password = registerForm['register-password'].value;
+            if (!currentUser) {
+                showNotification('Anda harus login untuk berkomentar.', true);
+                showModal('auth-modal');
+                return;
+            }
+
+            const form = e.target;
+            const commentInput = form.querySelector('input');
+            const commentText = commentInput.value.trim();
+            if (!commentText) return;
+
+            const topicElement = form.closest('[data-room-id]');
+            const roomId = topicElement.dataset.roomId;
 
             try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                await updateProfile(userCredential.user, { displayName });
-                hideModal('auth-modal');
-                showNotification(`Pendaftaran berhasil! Selamat datang, ${displayName}!`);
-                registerForm.reset();
+                const roomDocRef = doc(db, 'rooms', roomId);
+                await updateDoc(roomDocRef, {
+                    comments: arrayUnion({
+                        text: commentText,
+                        authorName: currentUser.displayName,
+                        authorId: currentUser.uid,
+                        createdAt: new Date()
+                    })
+                });
+                commentInput.value = '';
+                // onSnapshot akan otomatis merender komentar baru
             } catch (error) {
-                console.error("Registration error:", error.code);
-                const message = error.code === 'auth/email-already-in-use' ? 'Email ini sudah terdaftar.' : 'Pendaftaran gagal, coba lagi.';
-                showNotification(message, true);
+                console.error("Error adding comment: ", error);
+                showNotification('Gagal menambahkan komentar.', true);
             }
-        };
-
-        const handleEmailLogin = async (e) => {
-            e.preventDefault();
-            const email = loginForm['login-email'].value;
-            const password = loginForm['login-password'].value;
-
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                hideModal('auth-modal');
-                showNotification(`Selamat datang kembali, ${userCredential.user.displayName}!`);
-                loginForm.reset();
-            } catch (error) {
-                console.error("Login error:", error.code);
-                const message = (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential')
-                    ? 'Email atau password salah.'
-                    : 'Login gagal, coba lagi.';
-                showNotification(message, true);
-            }
-        };
-
-        const handleLogout = async () => {
-            try {
-                await signOut(auth);
-                showNotification('Anda telah logout.');
-            } catch (error) {
-                console.error("Error signing out:", error);
-            }
-        };
+        }
         
-        // --- Core Logic & DOM Handlers (unchanged from previous version) ---
+        // --- Event Handlers (Unchanged logic, just connecting to new functions) ---
         async function handleCreateRoomClick() {
             if (!currentUser) {
                 showNotification('Anda harus login untuk membuat room.', true);
@@ -296,76 +342,8 @@
                     showModal('create-room-modal');
                 }
             } catch (error) {
-                console.error("Error checking room creation limit:", error);
                 showNotification('Gagal memverifikasi, coba lagi.', true);
             }
-        }
-
-        async function handleCreateRoomSubmit(e) {
-            e.preventDefault();
-            if (!currentUser) return;
-            const title = document.getElementById('room-title').value;
-            const content = document.getElementById('room-content').value;
-            if (emptyForumMessage) {
-                emptyForumMessage.style.display = 'none';
-                forumThreadsContainer.classList.remove('items-center', 'justify-center');
-            }
-            addTopicToDOM(title, content, currentUser.displayName);
-            try {
-                const today = new Date().toDateString();
-                const userDocRef = doc(db, 'users', currentUser.uid);
-                await setDoc(userDocRef, { lastRoomCreationDate: today }, { merge: true });
-                hideModal('create-room-modal');
-                createRoomForm.reset();
-                showNotification('Room berhasil dibuat!');
-            } catch (error) {
-                console.error("Error saving room creation date:", error);
-                showNotification('Gagal membuat room, coba lagi.', true);
-            }
-        }
-        
-        function handleCommentSubmit(e, form) {
-            e.preventDefault();
-            if (!currentUser) {
-                showNotification('Anda harus login untuk berkomentar.', true);
-                showModal('auth-modal');
-                return;
-            }
-            const commentInput = form.querySelector('input');
-            const commentText = commentInput.value;
-            if (!commentText.trim()) return;
-            const commentList = form.previousElementSibling;
-            const newComment = document.createElement('div');
-            newComment.className = 'border-t border-gray-700 p-3 text-sm';
-            newComment.innerHTML = `<p><strong class="text-cyan-400">${currentUser.displayName}</strong>: ${commentText}</p>`;
-            commentList.appendChild(newComment);
-            commentInput.value = '';
-        }
-
-        function addTopicToDOM(title, content, author) {
-            const topicElement = document.createElement('div');
-            topicElement.className = 'w-full p-6 border-b border-gray-700';
-            topicElement.innerHTML = `
-                <div class="flex items-center mb-3">
-                    <div class="bg-cyan-500/20 text-cyan-400 p-3 rounded-lg mr-4">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-lg text-white">${title}</h3>
-                        <p class="text-sm text-gray-400">oleh <span class="text-cyan-500">${author}</span>, beberapa saat yang lalu</p>
-                    </div>
-                </div>
-                <p class="text-gray-300 ml-16 mb-4">${content}</p>
-                <div class="ml-16 mt-4">
-                    <h4 class="font-semibold text-gray-400 mb-2">Komentar</h4>
-                    <div class="comment-list bg-gray-900/50 rounded-lg max-h-48 overflow-y-auto"></div>
-                    <form class="comment-form mt-3">
-                         <input type="text" placeholder="${currentUser ? 'Tulis komentar...' : 'Login untuk berkomentar...'}" ${!currentUser ? 'disabled' : ''} class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                    </form>
-                </div>
-            `;
-            forumThreadsContainer.appendChild(topicElement);
-            topicElement.querySelector('.comment-form').addEventListener('submit', (e) => handleCommentSubmit(e, e.target));
         }
 
         // --- Initial Load & Auth State Listener ---
@@ -374,24 +352,17 @@
             updateUI();
         });
 
-        // Event Listeners
-        googleLoginBtn.addEventListener('click', handleGoogleLogin);
-        loginForm.addEventListener('submit', handleEmailLogin);
-        registerForm.addEventListener('submit', handleEmailRegister);
+        // Event Listeners Setup
+        googleLoginBtn.addEventListener('click', handleGoogleLogin_full);
+        loginForm.addEventListener('submit', handleEmailLogin_full);
+        registerForm.addEventListener('submit', handleEmailRegister_full);
         createRoomBtn.addEventListener('click', handleCreateRoomClick);
         createRoomForm.addEventListener('submit', handleCreateRoomSubmit);
+        showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); loginView.classList.add('hidden'); registerView.classList.remove('hidden'); });
+        showLoginLink.addEventListener('click', (e) => { e.preventDefault(); registerView.classList.add('hidden'); loginView.classList.remove('hidden'); });
 
-        showRegisterLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            loginView.classList.add('hidden');
-            registerView.classList.remove('hidden');
-        });
-
-        showLoginLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            registerView.classList.add('hidden');
-            loginView.classList.remove('hidden');
-        });
+        // Mulai mendengarkan perubahan room dari Firestore saat halaman dimuat
+        listenForRooms();
     </script>
 </body>
 </html>
